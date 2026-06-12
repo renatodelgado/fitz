@@ -8,13 +8,13 @@ export const ACTIVITY_LEVELS = [
   {
     label: 'Levemente ativo',
     detail: 'Exercícios leves de 1 a 3 vezes',
-    frequency: '1–3x por semana',
+    frequency: '1-3x por semana',
     factor: 1.37492642731
   },
   {
     label: 'Moderadamente ativo',
     detail: 'Exercícios regulares de 4 a 5 vezes',
-    frequency: '4–5x por semana',
+    frequency: '4-5x por semana',
     factor: 1.46497939965
   },
   {
@@ -26,7 +26,7 @@ export const ACTIVITY_LEVELS = [
   {
     label: 'Intensamente ativo',
     detail: 'Exercícios intensos de 6 a 7 vezes',
-    frequency: '6–7x por semana',
+    frequency: '6-7x por semana',
     factor: 1.72454384932
   },
   {
@@ -73,7 +73,6 @@ export function calculateResults(data) {
     macros: [
       {
         name: 'Carboidratos',
-        shortName: 'Carbo',
         grams: carbs,
         calories: carbCalories,
         percentage: (carbCalories / calories) * 100,
@@ -81,7 +80,6 @@ export function calculateResults(data) {
       },
       {
         name: 'Proteínas',
-        shortName: 'Proteína',
         grams: protein,
         calories: proteinCalories,
         percentage: (proteinCalories / calories) * 100,
@@ -89,7 +87,6 @@ export function calculateResults(data) {
       },
       {
         name: 'Gorduras',
-        shortName: 'Gordura',
         grams: fat,
         calories: fatCalories,
         percentage: (fatCalories / calories) * 100,

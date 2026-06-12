@@ -9,7 +9,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg'],
       manifest: {
-        name: 'Fitz — Plano nutricional',
+        name: 'Fitz - Plano nutricional',
         short_name: 'Fitz',
         description: 'Calcule suas necessidades calóricas e macronutrientes.',
         theme_color: '#173f35',
