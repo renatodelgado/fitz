@@ -36,6 +36,38 @@ import {
 
 const STEPS = ['sex', 'weight', 'height', 'age', 'activity', 'deficit', 'target']
 
+function parseRoute(pathname = window.location.pathname) {
+  const parts = pathname.split('/').filter(Boolean).map(decodeURIComponent)
+
+  if (parts[0] === 'avaliacao' && parts[1]) {
+    const step = Math.min(Math.max(Number(parts[2] ?? 1) - 1, 0), STEPS.length - 1)
+    return { view: 'assessment', profileId: parts[1], step }
+  }
+  if (parts[0] === 'resultado' && parts[1]) {
+    return { view: 'result', profileId: parts[1], step: 0 }
+  }
+  if (parts[0] === 'historico') {
+    return { view: 'history', profileId: parts[1] ?? null, step: 0 }
+  }
+  return { view: 'home', profileId: null, step: 0 }
+}
+
+function profilePath(segment, profileId, step) {
+  const encodedId = encodeURIComponent(profileId)
+  return step ? `/${segment}/${encodedId}/${step}` : `/${segment}/${encodedId}`
+}
+
+function getResults(data) {
+  if (!data?.sex || !data.weight || !data.height || !data.age || data.activity === null) return null
+  return calculateResults({
+    ...data,
+    weight: Number(data.weight),
+    height: Number(data.height),
+    age: Number(data.age),
+    deficit: Number(data.deficit)
+  })
+}
+
 function formatNumber(value, digits = 0) {
   return new Intl.NumberFormat('pt-BR', {
     maximumFractionDigits: digits,
@@ -100,18 +132,59 @@ function NumberStep({ icon: Icon, eyebrow, title, description, value, onChange, 
 
 function App() {
   const [store, setStore] = useState(readStore)
-  const [view, setView] = useState('home')
-  const [step, setStep] = useState(0)
-  const [data, setData] = useState(INITIAL_DATA)
-  const [results, setResults] = useState(null)
+  const [route, setRoute] = useState(parseRoute)
+  const routeProfile = store.profiles.find((profile) => profile.id === route.profileId)
+  const [data, setData] = useState(() => ({ ...INITIAL_DATA, ...routeProfile?.data }))
+  const [results, setResults] = useState(() => route.view === 'result' ? getResults(routeProfile?.data) : null)
 
   const activeProfile = store.profiles.find((profile) => profile.id === store.activeProfileId)
+  const view = route.view
+  const step = route.step
 
   useEffect(() => {
     writeStore(store)
   }, [store])
 
-  const openHome = () => setView('home')
+  useEffect(() => {
+    const handlePopState = () => {
+      const nextRoute = parseRoute()
+      const profile = store.profiles.find((item) => item.id === nextRoute.profileId)
+      setRoute(nextRoute)
+      if (profile) {
+        setStore((current) => ({ ...current, activeProfileId: profile.id }))
+        setData({ ...INITIAL_DATA, ...profile.data })
+        setResults(nextRoute.view === 'result' ? getResults(profile.data) : null)
+      }
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [store.profiles])
+
+  useEffect(() => {
+    if (route.view !== 'home' && store.profiles.length === 0) {
+      window.history.replaceState({}, '', '/')
+      setRoute(parseRoute('/'))
+      return
+    }
+    if (!route.profileId) return
+    const profile = store.profiles.find((item) => item.id === route.profileId)
+    if (!profile) {
+      window.history.replaceState({}, '', '/')
+      setRoute(parseRoute('/'))
+      return
+    }
+    if (store.activeProfileId !== profile.id) {
+      setStore((current) => ({ ...current, activeProfileId: profile.id }))
+    }
+  }, [route.profileId, route.view, store.activeProfileId, store.profiles])
+
+  const navigate = (path, replace = false) => {
+    window.history[replace ? 'replaceState' : 'pushState']({}, '', path)
+    setRoute(parseRoute(path))
+  }
+
+  const openHome = () => navigate('/')
 
   const selectProfile = (profileId) => {
     setStore((current) => ({ ...current, activeProfileId: profileId }))
@@ -120,9 +193,8 @@ function App() {
   const startAssessment = (profile) => {
     selectProfile(profile.id)
     setData({ ...INITIAL_DATA, ...profile.data })
-    setStep(0)
     setResults(null)
-    setView('assessment')
+    navigate(profilePath('avaliacao', profile.id, 1))
   }
 
   const addProfile = (name) => {
@@ -192,7 +264,7 @@ function App() {
   const continueAssessment = () => {
     saveDraft(data)
     if (step < STEPS.length - 1) {
-      setStep((current) => current + 1)
+      navigate(profilePath('avaliacao', store.activeProfileId, step + 2))
       return
     }
 
@@ -216,12 +288,17 @@ function App() {
           : profile
       ))
     }))
-    setView('result')
+    navigate(profilePath('resultado', store.activeProfileId))
   }
 
   const showHistory = (profileId = store.activeProfileId) => {
     if (profileId) selectProfile(profileId)
-    setView('history')
+    navigate(profileId ? profilePath('historico', profileId) : '/historico')
+  }
+
+  const selectHistoryProfile = (profileId) => {
+    selectProfile(profileId)
+    navigate(profilePath('historico', profileId))
   }
 
   const renderStep = () => {
@@ -353,7 +430,7 @@ function App() {
           <HistoryView
             profiles={store.profiles}
             activeProfileId={store.activeProfileId}
-            onSelect={selectProfile}
+            onSelect={selectHistoryProfile}
             onStart={(profile) => startAssessment(profile)}
           />
         )}
@@ -361,7 +438,7 @@ function App() {
 
       {view === 'assessment' && (
         <footer className="navigation">
-          <button className="button button-secondary" onClick={() => step === 0 ? openHome() : setStep((current) => current - 1)}>
+          <button className="button button-secondary" onClick={() => step === 0 ? openHome() : navigate(profilePath('avaliacao', store.activeProfileId, step))}>
             <ArrowLeft size={18} /> Voltar
           </button>
           <button className="button button-primary" disabled={!canContinue()} onClick={continueAssessment}>
