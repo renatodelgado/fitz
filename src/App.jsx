@@ -394,8 +394,8 @@ function App() {
         <nav className="top-nav">
           {store.profiles.length > 0 && (
             <>
-              <button className={view === 'home' ? 'active' : ''} onClick={openHome}><UsersRound size={16} /> Perfis</button>
-              <button className={view === 'history' ? 'active' : ''} onClick={() => showHistory()}><History size={16} /> Histórico</button>
+              <button className={view === 'home' ? 'active' : ''} onClick={openHome} aria-label="Perfis" title="Perfis"><UsersRound size={16} /> <span>Perfis</span></button>
+              <button className={view === 'history' ? 'active' : ''} onClick={() => showHistory()} aria-label="Histórico" title="Histórico"><History size={16} /> <span>Histórico</span></button>
             </>
           )}
         </nav>
@@ -569,11 +569,11 @@ function HistoryView({ profiles, activeProfileId, onSelect, onStart }) {
               <div className="record-row record-header"><span>Data</span><span>Peso</span><span>IMC</span><span>TMB</span><span>Meta diária</span></div>
               {[...records].reverse().map((record) => (
                 <div className="record-row" key={record.id}>
-                  <span><CalendarDays size={15} /> {formatDate(record.recordedAt)}</span>
-                  <strong>{formatNumber(record.weight, 1)} kg</strong>
-                  <strong>{formatNumber(record.bmi, 1)}</strong>
-                  <strong>{formatNumber(record.bmr)} kcal</strong>
-                  <strong>{formatNumber(record.calories)} kcal</strong>
+                  <span data-label="Data"><CalendarDays size={15} /> {formatDate(record.recordedAt)}</span>
+                  <strong data-label="Peso">{formatNumber(record.weight, 1)} kg</strong>
+                  <strong data-label="IMC">{formatNumber(record.bmi, 1)}</strong>
+                  <strong data-label="TMB">{formatNumber(record.bmr)} kcal</strong>
+                  <strong data-label="Meta diária">{formatNumber(record.calories)} kcal</strong>
                 </div>
               ))}
             </div>
