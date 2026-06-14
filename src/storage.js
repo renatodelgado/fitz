@@ -68,6 +68,11 @@ export function createRecord(data, results) {
     bmi: Number(data.weight) / heightInMeters ** 2,
     bmr: results.bmr,
     maintenance: results.maintenance,
-    calories: results.calories
+    calories: results.calories,
+    macros: {
+      carbs: results.macros[0].grams,
+      protein: results.macros[1].grams,
+      fat: results.macros[2].grams
+    }
   }
 }

@@ -83,6 +83,10 @@ function formatDate(value) {
   }).format(new Date(value))
 }
 
+function formatMacro(value) {
+  return Number.isFinite(value) ? `${formatNumber(value)} g` : '—'
+}
+
 function Logo() {
   return (
     <button className="logo logo-button" aria-label="Ir para perfis" type="button">
@@ -566,7 +570,7 @@ function HistoryView({ profiles, activeProfileId, onSelect, onStart }) {
           <section className="records-panel">
             <div className="panel-heading"><div><p className="eyebrow">Registros</p><h2>Linha do tempo</h2></div></div>
             <div className="records-table">
-              <div className="record-row record-header"><span>Data</span><span>Peso</span><span>IMC</span><span>TMB</span><span>Meta diária</span></div>
+              <div className="record-row record-header"><span>Data</span><span>Peso</span><span>IMC</span><span>TMB</span><span>Meta diária</span><span>Carboidratos</span><span>Proteínas</span><span>Gorduras</span></div>
               {[...records].reverse().map((record) => (
                 <div className="record-row" key={record.id}>
                   <span data-label="Data"><CalendarDays size={15} /> {formatDate(record.recordedAt)}</span>
@@ -574,6 +578,9 @@ function HistoryView({ profiles, activeProfileId, onSelect, onStart }) {
                   <strong data-label="IMC">{formatNumber(record.bmi, 1)}</strong>
                   <strong data-label="TMB">{formatNumber(record.bmr)} kcal</strong>
                   <strong data-label="Meta diária">{formatNumber(record.calories)} kcal</strong>
+                  <strong data-label="Carboidratos">{formatMacro(record.macros?.carbs)}</strong>
+                  <strong data-label="Proteínas">{formatMacro(record.macros?.protein)}</strong>
+                  <strong data-label="Gorduras">{formatMacro(record.macros?.fat)}</strong>
                 </div>
               ))}
             </div>

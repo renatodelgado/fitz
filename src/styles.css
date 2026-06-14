@@ -439,7 +439,7 @@ h1, h2 {
   box-shadow: 0 15px 35px rgba(23, 63, 53, .1);
 }
 
-.choice-card svg {
+.choice-card > svg {
   margin-bottom: 7px;
   color: var(--green-light);
 }
@@ -1198,11 +1198,11 @@ h1, h2 {
 }
 
 .record-row {
-  min-width: 650px;
+  min-width: 980px;
   padding: 13px 8px;
   border-bottom: 1px solid var(--line);
   display: grid;
-  grid-template-columns: 1.4fr repeat(4, 1fr);
+  grid-template-columns: 1.4fr repeat(7, 1fr);
   align-items: center;
   gap: 14px;
   font-size: 12px;
