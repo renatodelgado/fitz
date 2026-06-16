@@ -17,6 +17,8 @@ import {
   Scale,
   Target,
   Trash2,
+  TrendingUp,
+  Utensils,
   UserRound,
   UsersRound
 } from 'lucide-react'
@@ -33,6 +35,7 @@ import {
   readStore,
   writeStore
 } from './storage'
+import { FoodDiaryView, PredictionsView } from './NutritionViews'
 
 const STEPS = ['sex', 'weight', 'height', 'age', 'activity', 'deficit', 'target']
 
@@ -48,6 +51,12 @@ function parseRoute(pathname = window.location.pathname) {
   }
   if (parts[0] === 'historico') {
     return { view: 'history', profileId: parts[1] ?? null, step: 0 }
+  }
+  if (parts[0] === 'diario' && parts[1]) {
+    return { view: 'diary', profileId: parts[1], step: 0 }
+  }
+  if (parts[0] === 'previsoes' && parts[1]) {
+    return { view: 'predictions', profileId: parts[1], step: 0 }
   }
   return { view: 'home', profileId: null, step: 0 }
 }
@@ -305,6 +314,23 @@ function App() {
     navigate(profilePath('historico', profileId))
   }
 
+  const saveProfile = (nextProfile) => {
+    setStore((current) => ({
+      ...current,
+      profiles: current.profiles.map((profile) => (
+        profile.id === nextProfile.id ? nextProfile : profile
+      ))
+    }))
+  }
+
+  const showDiary = () => {
+    if (store.activeProfileId) navigate(profilePath('diario', store.activeProfileId))
+  }
+
+  const showPredictions = () => {
+    if (store.activeProfileId) navigate(profilePath('previsoes', store.activeProfileId))
+  }
+
   const renderStep = () => {
     switch (STEPS[step]) {
       case 'sex':
@@ -399,7 +425,9 @@ function App() {
           {store.profiles.length > 0 && (
             <>
               <button className={view === 'home' ? 'active' : ''} onClick={openHome} aria-label="Perfis" title="Perfis"><UsersRound size={16} /> <span>Perfis</span></button>
+              <button className={view === 'diary' ? 'active' : ''} onClick={showDiary} aria-label="Diário" title="Diário"><Utensils size={16} /> <span>Diário</span></button>
               <button className={view === 'history' ? 'active' : ''} onClick={() => showHistory()} aria-label="Histórico" title="Histórico"><History size={16} /> <span>Histórico</span></button>
+              <button className={view === 'predictions' ? 'active' : ''} onClick={showPredictions} aria-label="Previsões" title="Previsões"><TrendingUp size={16} /> <span>Previsões</span></button>
             </>
           )}
         </nav>
@@ -408,7 +436,7 @@ function App() {
 
       {view === 'assessment' && <div className="progress-track"><span style={{ width: `${assessmentProgress}%` }} /></div>}
 
-      <main className={['result', 'history', 'home'].includes(view) ? 'results-main' : ''}>
+      <main className={['result', 'history', 'home', 'diary', 'predictions'].includes(view) ? 'results-main' : ''}>
         {view === 'home' && (
           <Profiles
             profiles={store.profiles}
@@ -437,6 +465,12 @@ function App() {
             onSelect={selectHistoryProfile}
             onStart={(profile) => startAssessment(profile)}
           />
+        )}
+        {view === 'diary' && activeProfile && (
+          <FoodDiaryView profile={activeProfile} onSaveProfile={saveProfile} />
+        )}
+        {view === 'predictions' && activeProfile && (
+          <PredictionsView profile={activeProfile} />
         )}
       </main>
 
